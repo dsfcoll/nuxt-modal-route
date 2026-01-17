@@ -1,9 +1,11 @@
-// Global state to track modal route (shared across components)
-const modalRoute = ref<{ name: string; params: Record<string, any> } | null>(null)
+import { createSharedComposable } from '@vueuse/core'
 
-export const useBackgroundRoute = () => {
+export const useBackgroundRoute = createSharedComposable(() => {
   const router = useRouter()
   const route = useRoute()
+
+  // Modal route state
+  const modalRoute = ref<{ name: string; params: Record<string, any> } | null>(null)
 
   // Check if we're currently showing a modal
   const isModalOpen = computed(() => modalRoute.value !== null)
@@ -21,7 +23,7 @@ export const useBackgroundRoute = () => {
       params: to.params || {},
     }
 
-    // Update URL without full navigation (pushState with marker)
+    // Update URL without full navigation
     if (import.meta.client) {
       history.pushState(
         { ...history.state, backgroundView: route.fullPath, modal: true },
@@ -42,7 +44,6 @@ export const useBackgroundRoute = () => {
   // Handle browser back/forward
   if (import.meta.client) {
     window.addEventListener('popstate', () => {
-      // If navigating back from modal, clear modal state
       if (!history.state?.modal) {
         modalRoute.value = null
       }
@@ -56,4 +57,4 @@ export const useBackgroundRoute = () => {
     openAsModal,
     closeModal,
   }
-}
+})
